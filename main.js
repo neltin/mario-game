@@ -1,80 +1,50 @@
 import './style.css';
+import PlayerController from './Controllers/PlayerController';
+import PlatformController from './Controllers/PlatformController';
 
 //CANVAS
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 
-
 //Tamaño del cambas segun el tamaño de la ventana
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-
 const gravity = 1.5;
 
-
-class Player {
-  constructor(){
-    this.position ={
-      x:100,
-      y:100,
-    }
-
-    this.velocity = {
-      x: 0,
-      y: 0
-    }
-
-    this.width = 30;
-    this.height = 30;
-  }
-
-  draw(){
-    context.fillStyle = "red";
-    
-    context.fillRect(this.position.x, this.position.y, this.width, this.height);
-  }
-
-  update(){
-    this.draw();
-
-    this.position.y += this.velocity.y;
-    this.position.x += this.velocity.x;
-    
-    if(this.position.y + this.height + this.velocity.y <= canvas.height){ 
-      this.velocity.y += gravity; 
-    }else{ 
-      this.velocity.y = 0;
-    }
-
-  }
-}
-
-const player = new Player();
+//Nuevo Jugador
+const player = new PlayerController();
+const platform = new PlatformController();
 
 const keys = {
   left:{ pressKey: false},
-  right:{ pressKey: false}
+  right:{ pressKey: false},
+  velocityPress: { x: 5, y: 32}
 }
-
-
-
 
 const animate = () =>{
   requestAnimationFrame(animate);
   context.clearRect(0, 0 , canvas.width, canvas.height);
 
   if(keys.left.pressKey){
-    player.velocity.x = -5;
+    player.velocity.x = -keys.velocityPress.x;
 
   }else if(keys.right.pressKey){
-    player.velocity.x = 5;  
+    player.velocity.x = keys.velocityPress.x;
 
   }else{
     player.velocity.x = 0;   
   }
   
-  player.update();
+  //Segun plataforma
+  if(player.position.y + player.height <= platform.position.y && player.position.y + player.height + player.velocity.y >= platform.position.y){
+    player.velocity.y = 0;
+
+  }
+
+
+  player.update({context, canvas, gravity});
+  platform.draw(context);
 } 
 
 
@@ -93,7 +63,7 @@ window.addEventListener("keydown", event=> {
   }
 
   if(event.key == "ArrowUp") {
-      player.velocity.y -= 20;    
+      player.velocity.y -= keys.velocityPress.y;    
     }
   });
   
